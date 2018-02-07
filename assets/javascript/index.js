@@ -20,6 +20,7 @@ class shoppingCart {
       total_template: document.getElementById("total-template"),
       template: document.getElementById("template")
     }
+    console.log(this.elements.template)
     this.init()
   }
   init(){
@@ -153,7 +154,7 @@ class shoppingCart {
       // here yo go
       var extraLi = document.createElement("li");
       extraLi.classList += "list-group-item d-flex justify-content-between align-items-center ",
-      extraLi.innerHTML = `<span class="badge badge-info badge-pill mr-2">${item.count} </span>  ${item.name} - ${item.price}&euro; <span class="ml-auto mr-3 font-weight-bold">${(item.price * item.count).toFixed(2)}&euro;</span>`;
+      extraLi.innerHTML = `<span class="badge badge-info badge-pill mr-2">${item.count} </span>  ${item.name} - ${item.price}&euro; <span class="ml-auto mr-3 font-weight-bold">${(item.price * item.count).toFixed(2)}&euro;</span>`; 
       var extraBtn = document.createElement("button");
       extraBtn.classList.add("btn", "btn-sm", "btn-danger"),
       extraBtn.dataset.name = item.name,
@@ -170,12 +171,19 @@ class shoppingCart {
     var ttemplate = this.elements.total_template
     for (let index = 0; index < this.elements.totaltarget.length; index++){
       var clone = ttemplate.cloneNode(true)
-      clone.removeAttribute("id"),
-      clone.classList.remove("d-none"),
+      clone.removeAttribute("id");
+      clone.classList.remove("d-none");
       clone.querySelector(".total").innerHTML = this.db.total ? this.db.total.toFixed(2) : 0,
       clone.querySelector(".delivery").innerHTML = this.db.delivery ? this.db.delivery.toFixed(0) : 0,
       clone.querySelector(".shipping").innerHTML = this.db.shipping ? this.db.shipping.toFixed(0) : 0,
+      ttemplate.querySelector(".totalplusship").innerHTML = (this.db.total + this.db.shipping).toFixed(2)
+      if (this.db.total) {
+        var tTotal = this.db.total.toFixed(1);
+      } else {
+        var tTotal = 0;
+      } 
       this.elements.totaltarget[index].innerHTML = clone.innerHTML
+
     }
     //TODO we want to show the list of totals several times on the page
     //we loop over the target elements, take each time a new template, fill it with data and display it on the page
