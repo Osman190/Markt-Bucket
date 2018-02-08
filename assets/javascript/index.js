@@ -4,6 +4,7 @@ class shoppingCart {
     this.db.total = this.db.total || 0;
     this.db.shipping = this.db.shipping || 0;
     this.db.time = this.db.time || 0;
+    this.db.discount = this.db.discount || 0;
     this.elements = {
       //TODO provide selectors for:
       //- product list
@@ -20,7 +21,6 @@ class shoppingCart {
       total_template: document.getElementById("total-template"),
       template: document.getElementById("template")
     }
-    console.log(this.elements.template)
     this.init()
   }
   init(){
@@ -34,6 +34,17 @@ class shoppingCart {
       //TODO fill the element with the image from the database and add the name of the product to the title
       element.querySelector('.card-img-top').src = database[i].image,
       element.querySelector(".card-title").prepend(i);
+      // put the price and the discount percentage
+      var price = document.createElement('span');
+      price.innerHTML = `${database[i].price}€`
+      element.querySelector(".card-body").appendChild(price);
+      if (database[i].discount){
+        price.style.textDecoration = "line-through";
+        price.classList.add('text-danger');
+        var discount = document.createElement('div');
+        discount.innerHTML = `${database[i].discount} %`
+        element.querySelector('.card-body').appendChild(discount);
+      }
       //TODO lets put in the footer the shipping costs and delivery time
       var small = document.createElement('small');
       //TODO now we take the  button and fill it with all our data to use this for the remove action
@@ -45,6 +56,7 @@ class shoppingCart {
       btn.dataset.delivery = database[i].delivery,
       btn.dataset.shipping = database[i].shipping,
       btn.dataset.price = database[i].price,
+      btn.dataset.discount = database[i].discount,
         this.elements.list.appendChild(element);
       // Fade-in effect
       // this removes the faded class with a timeout from all divs - wooosh!
@@ -77,7 +89,8 @@ class shoppingCart {
       this.db.total = 0
       this.db.shipping = 0
       this.db.delivery = 0
-      localStorage.setItem("cart", JSON.stringify( {shipping: 0, total: 0, items: [], delivery: 0 } ))
+      this.db.discount = 0
+      localStorage.setItem("cart", JSON.stringify( {shipping: 0, total: 0, items: [], delivery: 0, discount: 0}))
       this.render()
     })
   }
@@ -106,14 +119,29 @@ class shoppingCart {
       if(itemKey !== undefined){
         this.db.items[itemKey].count++
       } else {
-        this.db.items.push({shipping: event.target.dataset.shipping, name: event.target.dataset.name, price: event.target.dataset.price, delivery: event.target.dataset.delivery, count: 1})
+        if (event.target.dataset.discount && event.target.dataset.discount !==  'undefined'){
+
+          this.db.items.push({ 
+            shipping: event.target.dataset.shipping, 
+            name: event.target.dataset.name,
+            price: event.target.dataset.discount,
+            delivery: event.target.dataset.delivery, count: 1 })
+        }else{
+
+        this.db.items.push({
+           shipping: event.target.dataset.shipping,
+           name: event.target.dataset.name, 
+           price: event.target.dataset.price, 
+           delivery: event.target.dataset.delivery, 
+           count: 1})
       }
     }
+  }
     if(this.db.items.length > 0) {
       this.db.total = this.db.items.map((i) => {
         return i.price * i.count
       }).reduce((e, i) => Number(e) + Number(i))
-
+    
       this.db.shipping = this.db.items.map((i) => {
         return i.shipping
       })
@@ -123,13 +151,19 @@ class shoppingCart {
         return i.delivery
       })
       this.db.delivery = Math.max(...this.db.delivery)
+
+      this.db.discount = this.db.items.map((i) => {
+        return i.discount
+      })
+      this.db.discount = Math.max(...this.db.discount)
     } else {
       this.db.shipping = 0;
       this.db.total = 0;
       this.db.delivery = 0;
+      this.db.discount = 0;
     }
 
-    localStorage.setItem("cart", JSON.stringify( {shipping: this.db.shipping, total: this.db.total, items: this.db.items, delivery: this.db.delivery } ))
+    localStorage.setItem("cart", JSON.stringify( {shipping: this.db.shipping, total: this.db.total, items: this.db.items, delivery: this.db.delivery, discount: this.db.discount}))
     this.render()
   }
   render(){
@@ -154,7 +188,7 @@ class shoppingCart {
       // here yo go
       var extraLi = document.createElement("li");
       extraLi.classList += "list-group-item d-flex justify-content-between align-items-center ",
-      extraLi.innerHTML = `<span class="badge badge-info badge-pill mr-2">${item.count} </span>  ${item.name} - ${item.price}&euro; <span class="ml-auto mr-3 font-weight-bold">${(item.price * item.count).toFixed(2)}&euro;</span>`; 
+      extraLi.innerHTML = `<span class="badge badge-info badge-pill mr-2">${item.count} </span>  ${item.name} - ${item.price}€ - ${item.discount} % <span class="ml-auto mr-3 font-weight-bold">${(item.price * item.count).toFixed(2)}&euro;</span>`; 
       var extraBtn = document.createElement("button");
       extraBtn.classList.add("btn", "btn-sm", "btn-danger"),
       extraBtn.dataset.name = item.name,
@@ -176,7 +210,8 @@ class shoppingCart {
       clone.querySelector(".total").innerHTML = this.db.total ? this.db.total.toFixed(2) : 0,
       clone.querySelector(".delivery").innerHTML = this.db.delivery ? this.db.delivery.toFixed(0) : 0,
       clone.querySelector(".shipping").innerHTML = this.db.shipping ? this.db.shipping.toFixed(0) : 0,
-      ttemplate.querySelector(".totalplusship").innerHTML = (this.db.total + this.db.shipping).toFixed(2)
+      clone.querySelector(".mDiscount").innerHTML = this.db.discount ? this.db.discount.toFixed(1) : 0,
+      ttemplate.querySelector(".totalplusship").innerHTML = ((this.db.total - ((this.db.total * this.db.discount) / 100 )) + this.db.shipping).toFixed(0)
       if (this.db.total) {
         var tTotal = this.db.total.toFixed(1);
       } else {
