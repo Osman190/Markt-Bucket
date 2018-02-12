@@ -127,7 +127,7 @@ class shoppingCart {
             price: updatTheprice,
             delivery: event.target.dataset.delivery,
             discount: event.target.dataset.discount, 
-            count: 1 })
+            count: 1})
         }else{
         this.db.items.push({
            shipping: event.target.dataset.shipping,
