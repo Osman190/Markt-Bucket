@@ -120,14 +120,15 @@ class shoppingCart {
         this.db.items[itemKey].count++
       } else {
         if (event.target.dataset.discount && event.target.dataset.discount !==  'undefined'){
-
-          this.db.items.push({ 
+          let updatTheprice = event.target.dataset.price - (event.target.dataset.price / 100 * event.target.dataset.discount)
+          this.db.items.push({
             shipping: event.target.dataset.shipping, 
             name: event.target.dataset.name,
-            price: event.target.dataset.discount,
-            delivery: event.target.dataset.delivery, count: 1 })
+            price: updatTheprice,
+            delivery: event.target.dataset.delivery,
+            discount: event.target.dataset.discount, 
+            count: 1 })
         }else{
-
         this.db.items.push({
            shipping: event.target.dataset.shipping,
            name: event.target.dataset.name, 
@@ -137,6 +138,7 @@ class shoppingCart {
       }
     }
   }
+  
     if(this.db.items.length > 0) {
       this.db.total = this.db.items.map((i) => {
         return i.price * i.count
